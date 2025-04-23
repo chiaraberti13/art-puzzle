@@ -1,0 +1,17 @@
+Your Puzzle Customization
+
+Dear Customer,
+
+Thank you for creating a custom puzzle on {shop_name}!
+
+Here's a summary of your customization:
+- Product: {product_name}
+- Box text: {box_text}
+
+We have attached a preview of your image.
+
+Remember that your puzzle will be carefully prepared according to the customizations you have chosen.
+
+You can view your order and download your invoice from the "Order history" section of your customer account by clicking on "My account" on our shop.
+
+{shop_name}

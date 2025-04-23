@@ -1,0 +1,17 @@
+La tua personalizzazione del puzzle
+
+Gentile Cliente,
+
+Grazie per aver creato un puzzle personalizzato su {shop_name}!
+
+Ecco un riepilogo della tua personalizzazione:
+- Prodotto: {product_name}
+- Testo sulla scatola: {box_text}
+
+Ti abbiamo allegato un'anteprima della tua immagine.
+
+Ricorda che il tuo puzzle verrà preparato con cura in base alle personalizzazioni che hai scelto.
+
+Puoi visualizzare il tuo ordine e scaricare la fattura dalla sezione "Cronologia ordini" del tuo account cliente cliccando su "Il mio account" nel nostro negozio.
+
+{shop_name}

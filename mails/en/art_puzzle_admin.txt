@@ -1,0 +1,17 @@
+New Puzzle Customization
+
+Administrator Notification,
+
+A new puzzle customization has been received.
+
+Customization details:
+- Customer: {customer_name} ({customer_email})
+- Product: {product_name}
+- Box text: {box_text}
+- Box color: {box_color}
+- Text color: {text_color}
+- Font: {font}
+
+The preview of the image uploaded by the customer is attached.
+
+{shop_name}

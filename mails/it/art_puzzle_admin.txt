@@ -1,0 +1,17 @@
+Nuova personalizzazione puzzle
+
+Notifica amministratore,
+
+È stata ricevuta una nuova personalizzazione per un puzzle.
+
+Dettagli della personalizzazione:
+- Cliente: {customer_name} ({customer_email})
+- Prodotto: {product_name}
+- Testo sulla scatola: {box_text}
+- Colore scatola: {box_color}
+- Colore testo: {text_color}
+- Font: {font}
+
+In allegato trovi l'anteprima dell'immagine caricata dal cliente.
+
+{shop_name}

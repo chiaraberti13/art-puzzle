@@ -1,0 +1,120 @@
+/* Stili per il modulo Art Puzzle */
+.art-puzzle-customize-button {
+    margin: 15px 0;
+}
+
+.art-puzzle-customize-button button {
+    width: 100%;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.art-puzzle-container {
+    padding: 20px;
+    background: #f8f8f8;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.art-puzzle-upload-zone {
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    padding: 30px;
+    text-align: center;
+    margin-bottom: 20px;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.art-puzzle-upload-zone:hover {
+    border-color: #2fb5d2;
+}
+
+.art-puzzle-upload-zone.highlight {
+    border-color: #2fb5d2;
+    background: #f0f9fc;
+}
+
+.art-puzzle-preview {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.art-puzzle-preview img {
+    max-width: 100%;
+    max-height: 300px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.art-puzzle-options {
+    margin: 20px 0;
+}
+
+.art-puzzle-options .form-group {
+    margin-bottom: 15px;
+}
+
+.art-puzzle-box-preview {
+    padding: 15px;
+    border: 1px solid #ddd;
+    margin-top: 20px;
+    text-align: center;
+    min-height: 100px;
+}
+
+.art-puzzle-crop-container {
+    position: relative;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.art-puzzle-orientation-buttons {
+    text-align: center;
+    margin: 10px 0;
+}
+
+.art-puzzle-orientation-buttons button {
+    margin: 0 5px;
+}
+
+.art-puzzle-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    display: none;
+}
+
+.color-option {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: .25rem;
+    margin-right: 5px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.color-option.selected {
+    border-color: #000;
+}
+
+.font-option {
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+
+.font-option.selected {
+    background-color: #f0f0f0;
+    border-color: #777;
+}
