@@ -35,20 +35,19 @@ $(document).ready(function() {
         var idProduct = {$id_product|intval};
         
         $.ajax({
-            url: '{$module_dir}ajax.php',
+            url: '{$ajax_url nofilter}&action=togglePuzzleProduct',
             type: 'POST',
             dataType: 'json',
             data: {
-                action: 'togglePuzzleProduct',
                 id_product: idProduct,
                 enabled: enabled,
-                token: '{$smarty.get.token|escape:'html':'UTF-8'}'
+                ajax: 1
             },
             success: function(response) {
                 if (response.success) {
                     showSuccessMessage(response.message);
                 } else {
-                    showErrorMessage(response.message);
+                    showErrorMessage(response.message || 'Errore durante il salvataggio');
                 }
             },
             error: function() {

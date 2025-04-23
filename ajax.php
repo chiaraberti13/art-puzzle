@@ -648,6 +648,9 @@ function handleTogglePuzzleProduct() {
             $product->uploadable_files = 1;
             $product->text_fields = 1;
             $product->save();
+            
+            // Crea i campi di personalizzazione se necessario
+            createCustomizationFields($product_id);
         }
         
         returnResponse(true, 'Prodotto abilitato come puzzle personalizzabile');

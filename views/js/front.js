@@ -29,7 +29,7 @@ function initArtPuzzle() {
     });
     
     // Gestisce il pulsante nei bottoni del prodotto
-    var customizeBtn = document.querySelector('.art-puzzle-customize-button button');
+    var customizeBtn = document.querySelector('#art-puzzle-customize-btn');
     if (customizeBtn) {
         customizeBtn.addEventListener('click', function(event) {
             event.preventDefault();
@@ -52,6 +52,9 @@ function initArtPuzzle() {
                 if (tabContent) {
                     tabContent.style.display = 'block';
                     openPuzzleCustomizer();
+                } else {
+                    // Se non c'è neanche il contenuto del tab, vai alla pagina del personalizzatore
+                    window.location.href = artPuzzleAjaxUrl.replace('ajax', 'customizer') + '?id_product=' + artPuzzleProductId;
                 }
             }
         });
@@ -60,14 +63,6 @@ function initArtPuzzle() {
     // Imposta l'ID prodotto
     puzzleCustomizerData.productId = artPuzzleProductId;
 }
-
-// Assicuriamoci che il DOM sia completamente caricato prima di inizializzare
-document.addEventListener('DOMContentLoaded', function() {
-    // Verifica se siamo in una pagina prodotto con puzzle configurato
-    if (typeof artPuzzleProductId !== 'undefined' && artPuzzleProductId > 0) {
-        initArtPuzzle();
-    }
-});
 
 function openPuzzleCustomizer() {
     // Prepara il contenitore per il personalizzatore
