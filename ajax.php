@@ -50,6 +50,10 @@ if (Tools::isSubmit('action')) {
                 handleGetFonts();
                 break;
                 
+            case 'togglePuzzleProduct':
+                handleTogglePuzzleProduct();
+                break;
+                
             default:
                 returnResponse(false, 'Azione non valida');
         }
@@ -612,4 +616,47 @@ function returnResponse($success, $message, $data = []) {
     header('Content-Type: application/json');
     echo json_encode($response);
     exit;
+}
+
+/**
+ * Gestisce l'attivazione/disattivazione di un prodotto come puzzle
+ */
+function handleTogglePuzzleProduct() {
+    $product_id = (int)Tools::getValue('id_product');
+    $enabled = (int)Tools::getValue('enabled');
+    
+    if (!$product_id) {
+        returnResponse(false, 'ID prodotto non valido');
+        return;
+    }
+    
+    // Ottieni la configurazione attuale
+    $product_ids = Configuration::get('ART_PUZZLE_PRODUCT_IDS');
+    $product_ids_array = $product_ids ? explode(',', $product_ids) : [];
+    
+    // Rimuovi eventuali voci vuote
+    $product_ids_array = array_filter($product_ids_array, function($v) { return trim($v) != ''; });
+    
+    if ($enabled) {
+        // Aggiungi il prodotto se non è già presente
+        if (!in_array((string)$product_id, $product_ids_array)) {
+            $product_ids_array[] = (string)$product_id;
+            
+            // Imposta il prodotto come personalizzabile
+            $product = new Product($product_id);
+            $product->customizable = 1;
+            $product->uploadable_files = 1;
+            $product->text_fields = 1;
+            $product->save();
+        }
+        
+        returnResponse(true, 'Prodotto abilitato come puzzle personalizzabile');
+    } else {
+        // Rimuovi il prodotto se presente
+        $product_ids_array = array_filter($product_ids_array, function($v) { return $v != (string)$product_id; });
+        returnResponse(true, 'Personalizzazione puzzle disabilitata per questo prodotto');
+    }
+    
+    // Aggiorna la configurazione
+    Configuration::updateValue('ART_PUZZLE_PRODUCT_IDS', implode(',', $product_ids_array));
 }

@@ -349,6 +349,30 @@ class Art_Puzzle extends Module
         }
     }
 
+    /**
+     * Hook per la visualizzazione nei tab del prodotto nel backoffice
+     */
+    public function hookDisplayAdminProductsExtra($params)
+    {
+        if (!isset($params['id_product'])) {
+            return '';
+        }
+        
+        $id_product = (int)$params['id_product'];
+        $product_ids = Configuration::get('ART_PUZZLE_PRODUCT_IDS');
+        $product_ids_array = explode(',', $product_ids);
+        
+        $is_puzzle_product = in_array((string)$id_product, $product_ids_array);
+        
+        $this->context->smarty->assign([
+            'id_product' => $id_product,
+            'is_puzzle_product' => $is_puzzle_product,
+            'module_dir' => $this->_path,
+        ]);
+        
+        return $this->display(__FILE__, 'views/templates/admin/product_tab.tpl');
+    }
+
     public function isPuzzleProduct($id_product)
     {
         if (!$id_product) {

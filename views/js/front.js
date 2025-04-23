@@ -37,21 +37,37 @@ function initArtPuzzle() {
             // Cerca il tab di personalizzazione e attivalo
             var puzzleTab = document.querySelector('a[href="#art-puzzle-tab-content"]');
             if (puzzleTab) {
-                puzzleTab.click();
+                // Attiva il tab programmaticamente
+                $(puzzleTab).tab('show');
                 
                 // Scroll fino al tab
                 setTimeout(function() {
                     puzzleTab.scrollIntoView({behavior: 'smooth'});
+                    // Apri direttamente il personalizzatore
+                    openPuzzleCustomizer();
                 }, 300);
+            } else {
+                // Se non trova il tab, apri comunque il personalizzatore
+                var tabContent = document.getElementById('art-puzzle-tab-content');
+                if (tabContent) {
+                    tabContent.style.display = 'block';
+                    openPuzzleCustomizer();
+                }
             }
-            
-            openPuzzleCustomizer();
         });
     }
     
     // Imposta l'ID prodotto
     puzzleCustomizerData.productId = artPuzzleProductId;
 }
+
+// Assicuriamoci che il DOM sia completamente caricato prima di inizializzare
+document.addEventListener('DOMContentLoaded', function() {
+    // Verifica se siamo in una pagina prodotto con puzzle configurato
+    if (typeof artPuzzleProductId !== 'undefined' && artPuzzleProductId > 0) {
+        initArtPuzzle();
+    }
+});
 
 function openPuzzleCustomizer() {
     // Prepara il contenitore per il personalizzatore
