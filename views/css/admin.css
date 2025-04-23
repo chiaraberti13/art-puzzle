@@ -1,0 +1,69 @@
+/* Stili per l'amministrazione del modulo Art Puzzle */
+#product_ids_container,
+#box_colors_container,
+#fonts_container {
+    margin-bottom: 25px;
+}
+
+.fixed-width-sm {
+    width: 100px !important;
+}
+
+.input-group {
+    width: 100%;
+}
+
+input[type="color"] {
+    cursor: pointer;
+}
+
+.form-control[readonly] {
+    background-color: #f8f8f8;
+}
+
+#box_colors_list .color-option {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    margin-right: 5px;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+#box_colors_list .color-option.selected {
+    border-color: #000;
+}
+
+.font-option {
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+
+.font-option.selected {
+    background-color: #f0f0f0;
+    border-color: #777;
+}
+
+.art-puzzle-container {
+    background-color: #f8f8f8;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+/* Allinea gli input di testo con i loro controlli */
+.form-group .row {
+    display: flex;
+    align-items: center;
+}
+
+/* Migliora la visualizzazione dell'anteprima dei colori */
+.color-preview {
+    padding: 5px 10px;
+    border-radius: 3px;
+    display: inline-block;
+    font-weight: bold;
+}

@@ -14,10 +14,24 @@
     </div>
 </div>
 
+{* CSS per i font personalizzati *}
+{if isset($fonts) && $fonts|@count > 0}
+    <style type="text/css">
+        {foreach from=$fonts key=index item=font}
+            @font-face {
+                font-family: 'puzzle-font-{$index}';
+                src: url('{$urls.base_url}modules/art_puzzle/views/fonts/{$font}') format('truetype');
+                font-weight: normal;
+                font-style: normal;
+            }
+        {/foreach}
+    </style>
+{/if}
+
 {* Questo script sarà incluso nel template *}
 <script type="text/javascript">
     // Variabili globali per il modulo
-    var puzzleTranslations = {
+    var artPuzzleTranslations = {
         customizeTitle: "{l s='Personalizza il tuo puzzle' mod='art_puzzle' js=1}",
         uploadImage: "{l s='Carica la tua immagine' mod='art_puzzle' js=1}",
         dragDropImage: "{l s='Trascina qui la tua immagine' mod='art_puzzle' js=1}",
@@ -38,23 +52,17 @@
         errorMessage: "{l s='Si è verificato un errore durante il salvataggio della personalizzazione.' mod='art_puzzle' js=1}",
         onlyImages: "{l s='Puoi caricare solo immagini.' mod='art_puzzle' js=1}",
         fileTooLarge: "{l s='L\'immagine è troppo grande. La dimensione massima è %s MB.' mod='art_puzzle' js=1}",
-        fileTypeNotAllowed: "{l s='Tipo di file non supportato. Formati consentiti: jpg, png.' mod='art_puzzle' js=1}"
+        fileTypeNotAllowed: "{l s='Tipo di file non supportato. Formati consentiti: {$allowed_file_types|implode:', '}.' mod='art_puzzle' js=1}"
     };
     
-    var maxUploadSize = {$maxUploadSize|intval};
-    var allowedFileTypes = [{foreach from=$allowedFileTypes item=type name=types}'{$type|escape:'javascript'}'{if !$smarty.foreach.types.last},{/if}{/foreach}];
-    var boxColors = {$boxColors|json_encode nofilter};
-    var fonts = {$fonts|json_encode nofilter};
-    var defaultBoxText = "{$defaultBoxText|escape:'javascript'}";
-    var boxTextMaxLength = {$maxBoxTextLength|intval};
-    var enableOrientation = {if $enableOrientation}true{else}false{/if};
-    var enableCropTool = {if $enableCropTool}true{else}false{/if};
-    var puzzleAjaxUrl = "{$puzzleAjaxUrl|escape:'javascript'}";
-    
-    // Inizializzazione quando il documento è pronto
-    $(document).ready(function() {
-        $('#art-puzzle-start-customize').on('click', function() {
-            openPuzzleCustomizer();
-        });
-    });
+    // Configurazione globale
+    var artPuzzleProductId = {$id_product|intval};
+    var artPuzzleMaxUploadSize = {$upload_max_size|intval};
+    var artPuzzleAllowedFileTypes = [{foreach from=$allowed_file_types item=type name=types}'{$type|escape:'javascript'}'{if !$smarty.foreach.types.last},{/if}{/foreach}];
+    var artPuzzleDefaultBoxText = "{$default_box_text|escape:'javascript'}";
+    var artPuzzleMaxBoxTextLength = {$max_box_text_length|intval};
+    var artPuzzleEnableOrientation = {if $enable_orientation}true{else}false{/if};
+    var artPuzzleEnableCropTool = {if $enable_crop_tool}true{else}false{/if};
+    var artPuzzleAjaxUrl = "{$puzzleAjaxUrl|escape:'javascript'}";
+    var artPuzzleToken = "{$securityToken|escape:'javascript'}";
 </script>

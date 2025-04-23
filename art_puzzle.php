@@ -7,72 +7,118 @@ if (!defined('_PS_VERSION_')) {
 class Art_Puzzle extends Module
 {
     public function __construct()
-{
-    $this->name = 'art_puzzle';
-    $this->tab = 'front_office_features';
-    $this->version = '1.0.0';
-    $this->author = 'Chiara Berti';
-    $this->need_instance = 0;
-    $this->bootstrap = true;
-    $this->ps_versions_compliancy = ['min' => '1.7.6.9', 'max' => _PS_VERSION_];
+    {
+        $this->name = 'art_puzzle';
+        $this->tab = 'front_office_features';
+        $this->version = '1.0.0';
+        $this->author = 'Chiara Berti';
+        $this->need_instance = 0;
+        $this->bootstrap = true;
+        $this->ps_versions_compliancy = ['min' => '1.7.6.0', 'max' => _PS_VERSION_];
 
-    parent::__construct();
+        parent::__construct();
 
-    $this->displayName = $this->l('Art Puzzle');
-    $this->description = $this->l('Modulo PrestaShop per la creazione di puzzle personalizzati.');
-    $this->confirmUninstall = $this->l('Sei sicuro di voler disinstallare questo modulo?');
-}
+        $this->displayName = $this->l('Art Puzzle');
+        $this->description = $this->l('Modulo PrestaShop per la creazione di puzzle personalizzati.');
+        $this->confirmUninstall = $this->l('Sei sicuro di voler disinstallare questo modulo?');
+    }
 
     public function install()
-{
-    return parent::install() &&
-        $this->registerHook('displayProductButtons') &&
-        $this->registerHook('displayHeader') &&
-        $this->registerHook('actionFrontControllerSetMedia') &&
-        $this->registerHook('displayProductExtraContent') &&
-        $this->registerHook('displayModuleInProduct') && // Aggiungi questo hook
-        Configuration::updateValue('ART_PUZZLE_PRODUCT_IDS', '') &&
-        Configuration::updateValue('ART_PUZZLE_MAX_UPLOAD_SIZE', '20') &&
-        Configuration::updateValue('ART_PUZZLE_ALLOWED_FILE_TYPES', 'jpg,png') &&
-        Configuration::updateValue('ART_PUZZLE_UPLOAD_FOLDER', '/upload/art_puzzle/') &&
-        Configuration::updateValue('ART_PUZZLE_SEND_PREVIEW_USER_EMAIL', 1) &&
-        Configuration::updateValue('ART_PUZZLE_SEND_PREVIEW_ADMIN_EMAIL', 1) &&
-        Configuration::updateValue('ART_PUZZLE_DEFAULT_BOX_TEXT', '') &&
-        Configuration::updateValue('ART_PUZZLE_MAX_BOX_TEXT_LENGTH', '30') &&
-        Configuration::updateValue('ART_PUZZLE_ENABLE_ORIENTATION', 1) &&
-        Configuration::updateValue('ART_PUZZLE_ENABLE_CROP_TOOL', 1) &&
-        Configuration::updateValue('ART_PUZZLE_ENABLE_PDF_USER', 1) &&
-        Configuration::updateValue('ART_PUZZLE_ENABLE_PDF_ADMIN', 1) &&
-        Configuration::updateValue('ART_PUZZLE_BOX_COLORS', '[]') &&
-        Configuration::updateValue('ART_PUZZLE_ADMIN_EMAIL', '');
-}
+    {
+        // Crea le directory necessarie
+        $this->createRequiredDirectories();
+        
+        // Assicurati che tutti gli hook necessari siano registrati
+        return parent::install() &&
+            $this->registerHook('displayProductButtons') &&
+            $this->registerHook('displayHeader') &&
+            $this->registerHook('actionFrontControllerSetMedia') &&
+            $this->registerHook('displayProductExtraContent') &&
+            $this->registerHook('displayBackOfficeHeader') &&
+            $this->registerHook('displayAdminProductsExtra') &&
+            $this->registerHook('displayAdminProductsMainStepLeftColumnMiddle') &&
+            
+            // Inizializza le configurazioni di default
+            Configuration::updateValue('ART_PUZZLE_PRODUCT_IDS', '') &&
+            Configuration::updateValue('ART_PUZZLE_MAX_UPLOAD_SIZE', '20') &&
+            Configuration::updateValue('ART_PUZZLE_ALLOWED_FILE_TYPES', 'jpg,jpeg,png') &&
+            Configuration::updateValue('ART_PUZZLE_UPLOAD_FOLDER', '/upload/') &&
+            Configuration::updateValue('ART_PUZZLE_SEND_PREVIEW_USER_EMAIL', 1) &&
+            Configuration::updateValue('ART_PUZZLE_SEND_PREVIEW_ADMIN_EMAIL', 1) &&
+            Configuration::updateValue('ART_PUZZLE_DEFAULT_BOX_TEXT', 'Il mio puzzle') &&
+            Configuration::updateValue('ART_PUZZLE_MAX_BOX_TEXT_LENGTH', '30') &&
+            Configuration::updateValue('ART_PUZZLE_ENABLE_ORIENTATION', 1) &&
+            Configuration::updateValue('ART_PUZZLE_ENABLE_CROP_TOOL', 1) &&
+            Configuration::updateValue('ART_PUZZLE_ENABLE_PDF_USER', 1) &&
+            Configuration::updateValue('ART_PUZZLE_ENABLE_PDF_ADMIN', 1) &&
+            Configuration::updateValue('ART_PUZZLE_BOX_COLORS', json_encode([
+                ['box' => '#FFFFFF', 'text' => '#000000'],
+                ['box' => '#000000', 'text' => '#FFFFFF'],
+                ['box' => '#FF0000', 'text' => '#FFFFFF'],
+                ['box' => '#0000FF', 'text' => '#FFFFFF'],
+            ])) &&
+            Configuration::updateValue('ART_PUZZLE_ADMIN_EMAIL', Configuration::get('PS_SHOP_EMAIL'));
+    }
 
-public function uninstall()
-{
-    // Rimuovi tutte le configurazioni salvate
-    return parent::uninstall() &&
-        Configuration::deleteByName('ART_PUZZLE_PRODUCT_IDS') &&
-        Configuration::deleteByName('ART_PUZZLE_MAX_UPLOAD_SIZE') &&
-        Configuration::deleteByName('ART_PUZZLE_ALLOWED_FILE_TYPES') &&
-        Configuration::deleteByName('ART_PUZZLE_UPLOAD_FOLDER') &&
-        Configuration::deleteByName('ART_PUZZLE_SEND_PREVIEW_USER_EMAIL') &&
-        Configuration::deleteByName('ART_PUZZLE_SEND_PREVIEW_ADMIN_EMAIL') &&
-        Configuration::deleteByName('ART_PUZZLE_DEFAULT_BOX_TEXT') &&
-        Configuration::deleteByName('ART_PUZZLE_MAX_BOX_TEXT_LENGTH') &&
-        Configuration::deleteByName('ART_PUZZLE_ENABLE_ORIENTATION') &&
-        Configuration::deleteByName('ART_PUZZLE_ENABLE_CROP_TOOL') &&
-        Configuration::deleteByName('ART_PUZZLE_ENABLE_PDF_USER') &&
-        Configuration::deleteByName('ART_PUZZLE_ENABLE_PDF_ADMIN') &&
-        Configuration::deleteByName('ART_PUZZLE_BOX_COLORS') &&
-        Configuration::deleteByName('ART_PUZZLE_ADMIN_EMAIL') &&
-        Configuration::deleteByName('ART_PUZZLE_FONTS');
-}
+    private function createRequiredDirectories()
+    {
+        // Crea directory upload
+        $uploadDir = _PS_MODULE_DIR_ . $this->name . '/upload/';
+        if (!file_exists($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Crea directory logs
+        $logDir = _PS_MODULE_DIR_ . $this->name . '/logs/';
+        if (!file_exists($logDir)) {
+            mkdir($logDir, 0755, true);
+        }
+        
+        // Crea directory fonts se non esiste
+        $fontsDir = _PS_MODULE_DIR_ . $this->name . '/views/fonts/';
+        if (!file_exists($fontsDir)) {
+            mkdir($fontsDir, 0755, true);
+        }
+        
+        // Crea file di log iniziale se non esiste
+        $logFile = $logDir . 'art_puzzle.log';
+        if (!file_exists($logFile)) {
+            file_put_contents($logFile, date('Y-m-d H:i:s') . " - [INFO] Modulo Art Puzzle installato\n");
+        }
+        
+        // Assicurati che i permessi siano corretti
+        chmod($uploadDir, 0755);
+        chmod($logDir, 0755);
+        
+        return true;
+    }
+
+    public function uninstall()
+    {
+        // Rimuovi tutte le configurazioni salvate
+        return parent::uninstall() &&
+            Configuration::deleteByName('ART_PUZZLE_PRODUCT_IDS') &&
+            Configuration::deleteByName('ART_PUZZLE_MAX_UPLOAD_SIZE') &&
+            Configuration::deleteByName('ART_PUZZLE_ALLOWED_FILE_TYPES') &&
+            Configuration::deleteByName('ART_PUZZLE_UPLOAD_FOLDER') &&
+            Configuration::deleteByName('ART_PUZZLE_SEND_PREVIEW_USER_EMAIL') &&
+            Configuration::deleteByName('ART_PUZZLE_SEND_PREVIEW_ADMIN_EMAIL') &&
+            Configuration::deleteByName('ART_PUZZLE_DEFAULT_BOX_TEXT') &&
+            Configuration::deleteByName('ART_PUZZLE_MAX_BOX_TEXT_LENGTH') &&
+            Configuration::deleteByName('ART_PUZZLE_ENABLE_ORIENTATION') &&
+            Configuration::deleteByName('ART_PUZZLE_ENABLE_CROP_TOOL') &&
+            Configuration::deleteByName('ART_PUZZLE_ENABLE_PDF_USER') &&
+            Configuration::deleteByName('ART_PUZZLE_ENABLE_PDF_ADMIN') &&
+            Configuration::deleteByName('ART_PUZZLE_BOX_COLORS') &&
+            Configuration::deleteByName('ART_PUZZLE_ADMIN_EMAIL') &&
+            Configuration::deleteByName('ART_PUZZLE_FONTS');
+    }
 
     public function getContent()
     {
         $output = '';
 
-        if (((bool)Tools::isSubmit('submitArtPuzzle')) == true && Tools::isSubmit('token') && Tools::getAdminToken('AdminModules' . (int)Tab::getIdFromClassName('AdminModules') . (int)$this->context->employee->id)) {
+        if (Tools::isSubmit('submitArtPuzzle')) {
             // Elaborazione degli ID prodotto inviati (vengono inviati come array)
             $product_ids = Tools::getValue('ART_PUZZLE_PRODUCT_IDS');
             if (is_array($product_ids)) {
@@ -99,15 +145,15 @@ public function uninstall()
             // Salvataggio combinazioni colori
             $box_colors = Tools::getValue('ART_PUZZLE_BOX_COLORS');
             if (is_array($box_colors)) {
-            $colors_array = [];
-            foreach ($box_colors as $color_json) {
-            $color_set = json_decode($color_json, true);
-            if ($color_set && isset($color_set['box']) && isset($color_set['text'])) {
-            $colors_array[] = $color_set;
-        }
-    }
-            Configuration::updateValue('ART_PUZZLE_BOX_COLORS', json_encode($colors_array));
-}
+                $colors_array = [];
+                foreach ($box_colors as $color_json) {
+                    $color_set = json_decode($color_json, true);
+                    if ($color_set && isset($color_set['box']) && isset($color_set['text'])) {
+                        $colors_array[] = $color_set;
+                    }
+                }
+                Configuration::updateValue('ART_PUZZLE_BOX_COLORS', json_encode($colors_array));
+            }
 
             // Gestione del caricamento dei file dei fonts (massimo 10 file)
             $upload_folder = _PS_MODULE_DIR_ . $this->name . '/views/fonts/';
@@ -115,6 +161,13 @@ public function uninstall()
                 mkdir($upload_folder, 0755, true);
             }
             $uploaded_fonts = array();
+            
+            // Recupera font esistenti
+            $current_fonts = Configuration::get('ART_PUZZLE_FONTS');
+            if ($current_fonts) {
+                $uploaded_fonts = explode(',', $current_fonts);
+            }
+            
             for ($i = 1; $i <= 10; $i++) {
                 if (isset($_FILES['ART_PUZZLE_FONT_' . $i]) && !empty($_FILES['ART_PUZZLE_FONT_' . $i]['name'])) {
                     $file = $_FILES['ART_PUZZLE_FONT_' . $i];
@@ -122,82 +175,194 @@ public function uninstall()
                     if (strtolower($ext) == 'ttf') {
                         $new_filename = 'font_' . $i . '.' . $ext;
                         if (move_uploaded_file($file['tmp_name'], $upload_folder . $new_filename)) {
-                            $uploaded_fonts[] = $new_filename;
+                            if (!in_array($new_filename, $uploaded_fonts)) {
+                                $uploaded_fonts[] = $new_filename;
+                            }
                         }
                     }
                 }
             }
+            
             if (count($uploaded_fonts) > 0) {
                 Configuration::updateValue('ART_PUZZLE_FONTS', implode(',', $uploaded_fonts));
             }
 
             $output .= $this->displayConfirmation($this->l('Impostazioni aggiornate'));
+            
+            // Verifica e crea directory se necessario
+            $this->createRequiredDirectories();
         }
 
         return $output . $this->displayForm();
     }
 
-    public function hookDisplayProductExtraContent($params)
-{
-    if ($this->isPuzzleProduct($params['product']->id)) {
-        $this->context->smarty->assign([
-            'id_product' => $params['product']->id,
-            'upload_max_size' => Configuration::get('ART_PUZZLE_MAX_UPLOAD_SIZE'),
-            'allowed_file_types' => Configuration::get('ART_PUZZLE_ALLOWED_FILE_TYPES'),
-            'upload_folder' => Configuration::get('ART_PUZZLE_UPLOAD_FOLDER'),
-            'enable_orientation' => Configuration::get('ART_PUZZLE_ENABLE_ORIENTATION'),
-            'enable_crop_tool' => Configuration::get('ART_PUZZLE_ENABLE_CROP_TOOL'),
-            'default_box_text' => Configuration::get('ART_PUZZLE_DEFAULT_BOX_TEXT'),
-            'max_box_text_length' => Configuration::get('ART_PUZZLE_MAX_BOX_TEXT_LENGTH'),
-        ]);
-
-        $extraContent = new ProductExtraContent();
-        $extraContent->setTitle($this->l('Personalizza il tuo puzzle'));
-        $extraContent->setContent(
-            $this->display(__FILE__, 'views/templates/hook/displayProductExtraContent.tpl')
-        );
-
-        return array($extraContent);
+    public function hookDisplayHeader($params)
+    {
+        // Solo per le pagine prodotto
+        if ($this->context->controller instanceof ProductControllerCore) {
+            $product_id = (int)Tools::getValue('id_product');
+            if ($this->isPuzzleProduct($product_id)) {
+                $this->context->controller->addJS($this->_path . 'views/js/front.js');
+                $this->context->controller->addCSS($this->_path . 'views/css/front.css');
+                
+                // Aggiungi Cropper.js se abilitato
+                if (Configuration::get('ART_PUZZLE_ENABLE_CROP_TOOL')) {
+                    $this->context->controller->addJS('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js');
+                    $this->context->controller->addCSS('https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css');
+                }
+                
+                // Carica CSS per i font personalizzati
+                $this->loadCustomFontsCSS();
+                
+                // Aggiungi variabili JS
+                Media::addJsDef([
+                    'art_puzzle_ajax_url' => $this->context->link->getModuleLink('art_puzzle', 'ajax'),
+                    'art_puzzle_product_id' => $product_id,
+                    'art_puzzle_token' => Tools::getToken(false)
+                ]);
+            }
+        }
     }
 
-    return array();
-}
-
-public function hookDisplayProductButtons($params)
-{
-    // Questa funzione mostra contenuto sotto i pulsanti del prodotto
-    if ($this->isPuzzleProduct($params['product']['id_product'])) {
-        return '<div class="art-puzzle-customize-button">
-                    <button type="button" class="btn btn-primary">
-                        ' . $this->l('Personalizza il tuo puzzle') . '
-                    </button>
-                </div>';
-    }
-    
-    return '';
-}
-
-public function hookActionFrontControllerSetMedia($params)
-{
-    // Questa funzione carica CSS e JS necessari
-    if (Tools::getValue('controller') == 'product') {
-        $this->context->controller->registerStylesheet(
-            'module-art-puzzle-style',
-            'modules/'.$this->name.'/views/css/front.css'
-        );
+    private function loadCustomFontsCSS()
+    {
+        $fonts = Configuration::get('ART_PUZZLE_FONTS');
+        if (!$fonts) {
+            return;
+        }
         
-        $this->context->controller->registerJavascript(
-            'module-art-puzzle-script',
-            'modules/'.$this->name.'/views/js/front.js'
-        );
+        $fonts_array = explode(',', $fonts);
+        $css = '<style type="text/css">';
+        
+        foreach ($fonts_array as $index => $font) {
+            $font_url = $this->_path . 'views/fonts/' . $font;
+            $css .= '@font-face {
+                font-family: "puzzle-font-' . $index . '";
+                src: url("' . $font_url . '") format("truetype");
+                font-weight: normal;
+                font-style: normal;
+            }';
+        }
+        
+        $css .= '</style>';
+        
+        $this->context->smarty->assign('art_puzzle_fonts_css', $css);
+        return $this->display(__FILE__, 'views/templates/hook/fonts_css.tpl');
     }
-}
 
-private function isPuzzleProduct($id_product)
-{
-    $product_ids = explode(',', Configuration::get('ART_PUZZLE_PRODUCT_IDS'));
-    return in_array($id_product, $product_ids);
-}
+    public function hookDisplayProductExtraContent($params)
+    {
+        if ($this->isPuzzleProduct($params['product']->id)) {
+            // Prepara i dati per il template
+            $boxColors = Configuration::get('ART_PUZZLE_BOX_COLORS');
+            $fonts = Configuration::get('ART_PUZZLE_FONTS');
+            
+            $this->context->smarty->assign([
+                'id_product' => $params['product']->id,
+                'upload_max_size' => Configuration::get('ART_PUZZLE_MAX_UPLOAD_SIZE'),
+                'allowed_file_types' => explode(',', Configuration::get('ART_PUZZLE_ALLOWED_FILE_TYPES')),
+                'upload_folder' => Configuration::get('ART_PUZZLE_UPLOAD_FOLDER'),
+                'enable_orientation' => Configuration::get('ART_PUZZLE_ENABLE_ORIENTATION'),
+                'enable_crop_tool' => Configuration::get('ART_PUZZLE_ENABLE_CROP_TOOL'),
+                'default_box_text' => Configuration::get('ART_PUZZLE_DEFAULT_BOX_TEXT'),
+                'max_box_text_length' => Configuration::get('ART_PUZZLE_MAX_BOX_TEXT_LENGTH'),
+                'boxColors' => $boxColors ? json_decode($boxColors, true) : [],
+                'fonts' => $fonts ? explode(',', $fonts) : [],
+                'puzzleAjaxUrl' => $this->context->link->getModuleLink('art_puzzle', 'ajax'),
+                'securityToken' => Tools::getToken(false)
+            ]);
+
+            $extraContent = new PrestaShop\PrestaShop\Core\Product\ProductExtraContent();
+            $extraContent->setTitle($this->l('Personalizza il tuo puzzle'));
+            $extraContent->setContent($this->display(__FILE__, 'views/templates/hook/displayProductExtraContent.tpl'));
+
+            return [$extraContent];
+        }
+
+        return [];
+    }
+
+    public function hookActionFrontControllerSetMedia($params)
+    {
+        // Aggiungi JS e CSS solo nelle pagine prodotto
+        if ($this->context->controller->php_self == 'product') {
+            $product_id = (int)Tools::getValue('id_product');
+            
+            if ($this->isPuzzleProduct($product_id)) {
+                $this->context->controller->registerStylesheet(
+                    'module-art-puzzle-style',
+                    'modules/'.$this->name.'/views/css/front.css',
+                    ['media' => 'all', 'priority' => 150]
+                );
+                
+                $this->context->controller->registerJavascript(
+                    'module-art-puzzle-script',
+                    'modules/'.$this->name.'/views/js/front.js',
+                    ['position' => 'bottom', 'priority' => 150]
+                );
+                
+                // Aggiungi Cropper.js se abilitato
+                if (Configuration::get('ART_PUZZLE_ENABLE_CROP_TOOL')) {
+                    $this->context->controller->registerJavascript(
+                        'cropperjs',
+                        'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js',
+                        ['server' => 'remote', 'position' => 'bottom', 'priority' => 140]
+                    );
+                    
+                    $this->context->controller->registerStylesheet(
+                        'cropperjs-style',
+                        'https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css',
+                        ['server' => 'remote', 'media' => 'all', 'priority' => 140]
+                    );
+                }
+                
+                // Assegna variabili JavaScript
+                Media::addJsDef([
+                    'artPuzzleAjaxUrl' => $this->context->link->getModuleLink('art_puzzle', 'ajax'),
+                    'artPuzzleProductId' => $product_id,
+                    'artPuzzleToken' => Tools::getToken(false)
+                ]);
+            }
+        }
+    }
+
+    public function hookDisplayProductButtons($params)
+    {
+        // Questa funzione mostra contenuto sotto i pulsanti del prodotto
+        if (isset($params['product']) && $this->isPuzzleProduct($params['product']['id_product'])) {
+            $this->context->smarty->assign([
+                'id_product' => $params['product']['id_product']
+            ]);
+            
+            return $this->display(__FILE__, 'views/templates/hook/displayProductButtons.tpl');
+        }
+        
+        return '';
+    }
+
+    public function hookDisplayBackOfficeHeader($params)
+    {
+        // Aggiungi CSS e JS per il backoffice
+        if (Tools::getValue('configure') == $this->name) {
+            $this->context->controller->addCSS($this->_path . 'views/css/admin.css');
+            $this->context->controller->addJS($this->_path . 'views/js/admin.js');
+        }
+    }
+
+    public function isPuzzleProduct($id_product)
+    {
+        if (!$id_product) {
+            return false;
+        }
+        
+        $product_ids_str = Configuration::get('ART_PUZZLE_PRODUCT_IDS');
+        if (!$product_ids_str) {
+            return false;
+        }
+        
+        $product_ids = explode(',', $product_ids_str);
+        return in_array((string)$id_product, $product_ids);
+    }
 
     private function displayForm()
     {
@@ -433,7 +598,7 @@ private function isPuzzleProduct($id_product)
         $helper->default_form_language = $defaultLang;
         $helper->allow_employee_form_lang = $defaultLang;
         $helper->title = $this->displayName;
-        $helper->submit_action = 'submitArtPuzzle'; // Aggiungi questa riga
+        $helper->submit_action = 'submitArtPuzzle';
 
         // Impostazione dei valori correnti per ciascun campo
         $helper->fields_value['ART_PUZZLE_MAX_UPLOAD_SIZE'] = Tools::getValue('ART_PUZZLE_MAX_UPLOAD_SIZE', Configuration::get('ART_PUZZLE_MAX_UPLOAD_SIZE'));
@@ -495,67 +660,67 @@ private function isPuzzleProduct($id_product)
     }
 
     private function getBoxColorsHtml()
-{
-    $box_colors = Configuration::get('ART_PUZZLE_BOX_COLORS') ? Configuration::get('ART_PUZZLE_BOX_COLORS') : '[]';
-    $colors_array = json_decode($box_colors, true) ?: [];
-    
-    $html = '<div id="box_colors_container">';
-    
-    // Prima riga per aggiungere nuovi colori
-    $html .= '<div class="form-group">';
-    $html .= '<div class="row" style="margin-bottom: 20px; display: flex; align-items: center;">';
-    $html .= '<div class="col-md-5">';
-    $html .= '<label style="margin-bottom: 5px; display: block;">Colore scatola</label>';
-    $html .= '<div style="display: flex; align-items: center;">';
-    $html .= '<input type="color" id="new_box_color" class="form-control" value="#ffffff" style="padding: 3px; height: 38px; width: 60px; margin-right: 10px;" onchange="updateColorPreview(this, \'new_box_color_hex\')" />';
-    $html .= '<input type="text" id="new_box_color_hex" class="form-control" value="#ffffff" style="max-width: 100px;" onchange="updateColorFromHex(this, \'new_box_color\')" />';
-    $html .= '</div>';
-    $html .= '</div>';
-    
-    $html .= '<div class="col-md-5">';
-    $html .= '<label style="margin-bottom: 5px; display: block;">Colore testo</label>';
-    $html .= '<div style="display: flex; align-items: center;">';
-    $html .= '<input type="color" id="new_text_color" class="form-control" value="#000000" style="padding: 3px; height: 38px; width: 60px; margin-right: 10px;" onchange="updateColorPreview(this, \'new_text_color_hex\')" />';
-    $html .= '<input type="text" id="new_text_color_hex" class="form-control" value="#000000" style="max-width: 100px;" onchange="updateColorFromHex(this, \'new_text_color\')" />';
-    $html .= '</div>';
-    $html .= '</div>';
-    
-    $html .= '<div class="col-md-2" style="display: flex; align-items: flex-end; height: 75px;">';
-    $html .= '<button type="button" class="btn btn-primary" onclick="addBoxColors()">Aggiungi</button>';
-    $html .= '</div>';
-    $html .= '</div>';
-    $html .= '</div>';
-    
-    // Lista dei colori già caricati
-    $html .= '<div id="box_colors_list">';
-    if (!empty($colors_array)) {
-        $html .= '<p><strong>Combinazioni colori preimpostate:</strong></p>';
-        foreach ($colors_array as $index => $color_set) {
-            $boxColorContrast = $this->getContrastColor($color_set['box']);
-            $textColorContrast = $this->getContrastColor($color_set['text']);
-            
-            $html .= '<div class="form-group" style="margin-bottom: 10px;">';
-            $html .= '<div class="row" style="display: flex; align-items: center;">';
-            $html .= '<div class="col-md-10">';
-            $html .= '<div style="display: flex; align-items: center; background-color: #f5f5f5; padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px;">';
-            $html .= 'Scatola: <span style="background-color:' . $color_set['box'] . '; color:' . $boxColorContrast . '; padding: 2px 10px; border: 1px solid #000; margin: 0 5px;">' . $color_set['box'] . '</span> ';
-            $html .= 'Testo: <span style="background-color:' . $color_set['text'] . '; color:' . $textColorContrast . '; padding: 2px 10px; border: 1px solid #000; margin: 0 5px;">' . $color_set['text'] . '</span>';
-            $html .= '<input type="hidden" name="ART_PUZZLE_BOX_COLORS[]" value=\'' . json_encode($color_set) . '\' />';
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '<div class="col-md-2">';
-            $html .= '<button type="button" class="btn btn-danger" onclick="removeBoxColors(this)">Rimuovi</button>';
-            $html .= '</div>';
-            $html .= '</div>';
-            $html .= '</div>';
+    {
+        $box_colors = Configuration::get('ART_PUZZLE_BOX_COLORS') ? Configuration::get('ART_PUZZLE_BOX_COLORS') : '[]';
+        $colors_array = json_decode($box_colors, true) ?: [];
+        
+        $html = '<div id="box_colors_container">';
+        
+        // Prima riga per aggiungere nuovi colori
+        $html .= '<div class="form-group">';
+        $html .= '<div class="row" style="margin-bottom: 20px; display: flex; align-items: center;">';
+        $html .= '<div class="col-md-5">';
+        $html .= '<label style="margin-bottom: 5px; display: block;">Colore scatola</label>';
+        $html .= '<div style="display: flex; align-items: center;">';
+        $html .= '<input type="color" id="new_box_color" class="form-control" value="#ffffff" style="padding: 3px; height: 38px; width: 60px; margin-right: 10px;" onchange="updateColorPreview(this, \'new_box_color_hex\')" />';
+        $html .= '<input type="text" id="new_box_color_hex" class="form-control" value="#ffffff" style="max-width: 100px;" onchange="updateColorFromHex(this, \'new_box_color\')" />';
+        $html .= '</div>';
+        $html .= '</div>';
+        
+        $html .= '<div class="col-md-5">';
+        $html .= '<label style="margin-bottom: 5px; display: block;">Colore testo</label>';
+        $html .= '<div style="display: flex; align-items: center;">';
+        $html .= '<input type="color" id="new_text_color" class="form-control" value="#000000" style="padding: 3px; height: 38px; width: 60px; margin-right: 10px;" onchange="updateColorPreview(this, \'new_text_color_hex\')" />';
+        $html .= '<input type="text" id="new_text_color_hex" class="form-control" value="#000000" style="max-width: 100px;" onchange="updateColorFromHex(this, \'new_text_color\')" />';
+        $html .= '</div>';
+        $html .= '</div>';
+        
+        $html .= '<div class="col-md-2" style="display: flex; align-items: flex-end; height: 75px;">';
+        $html .= '<button type="button" class="btn btn-primary" onclick="addBoxColors()">Aggiungi</button>';
+        $html .= '</div>';
+        $html .= '</div>';
+        $html .= '</div>';
+        
+        // Lista dei colori già caricati
+        $html .= '<div id="box_colors_list">';
+        if (!empty($colors_array)) {
+            $html .= '<p><strong>Combinazioni colori preimpostate:</strong></p>';
+            foreach ($colors_array as $index => $color_set) {
+                $boxColorContrast = $this->getContrastColor($color_set['box']);
+                $textColorContrast = $this->getContrastColor($color_set['text']);
+                
+                $html .= '<div class="form-group" style="margin-bottom: 10px;">';
+                $html .= '<div class="row" style="display: flex; align-items: center;">';
+                $html .= '<div class="col-md-10">';
+                $html .= '<div style="display: flex; align-items: center; background-color: #f5f5f5; padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px;">';
+                $html .= 'Scatola: <span style="background-color:' . $color_set['box'] . '; color:' . $boxColorContrast . '; padding: 2px 10px; border: 1px solid #000; margin: 0 5px;">' . $color_set['box'] . '</span> ';
+                $html .= 'Testo: <span style="background-color:' . $color_set['text'] . '; color:' . $textColorContrast . '; padding: 2px 10px; border: 1px solid #000; margin: 0 5px;">' . $color_set['text'] . '</span>';
+                $html .= '<input type="hidden" name="ART_PUZZLE_BOX_COLORS[]" value=\'' . json_encode($color_set) . '\' />';
+                $html .= '</div>';
+                $html .= '</div>';
+                $html .= '<div class="col-md-2">';
+                $html .= '<button type="button" class="btn btn-danger" onclick="removeBoxColors(this)">Rimuovi</button>';
+                $html .= '</div>';
+                $html .= '</div>';
+                $html .= '</div>';
+            }
         }
+        $html .= '</div>';
+        
+        $html .= '</div>';
+        
+        return $html;
     }
-    $html .= '</div>';
-    
-    $html .= '</div>';
-    
-    return $html;
-}
 
     private function getContrastColor($hexColor)
     {
@@ -700,72 +865,72 @@ private function isPuzzleProduct($id_product)
             }
             
             function addBoxColors() {
-    var boxColor = document.getElementById("new_box_color").value;
-    var textColor = document.getElementById("new_text_color").value;
-    
-    if (boxColor === "" || textColor === "") {
-        alert("Per favore seleziona entrambi i colori");
-        return;
-    }
-    
-    var container = document.getElementById("box_colors_list");
-    
-    // Aggiungi titolo se non esiste ancora
-    if (container.children.length === 0) {
-        var title = document.createElement("p");
-        title.innerHTML = "<strong>Combinazioni colori preimpostate:</strong>";
-        container.appendChild(title);
-    }
-    
-    var div = document.createElement("div");
-    div.className = "form-group";
-    div.style.marginBottom = "10px";
-    
-    var row = document.createElement("div");
-    row.className = "row";
-    row.style.display = "flex";
-    row.style.alignItems = "center";
-    
-    var col10 = document.createElement("div");
-    col10.className = "col-md-10";
-    
-    var display = document.createElement("div");
-    display.style.display = "flex";
-    display.style.alignItems = "center";
-    display.style.backgroundColor = "#f5f5f5";
-    display.style.padding = "6px 12px";
-    display.style.border = "1px solid #ccc";
-    display.style.borderRadius = "4px";
-    
-    var boxColorContrast = getContrastColor(boxColor);
-    var textColorContrast = getContrastColor(textColor);
-    
-   display.innerHTML = "Scatola: <span style=\"background-color:" + boxColor + "; color:" + boxColorContrast + "; padding: 2px 10px; border: 1px solid #000; margin: 0 5px;\">" + boxColor + "</span> " +
-                   "Testo: <span style=\"background-color:" + textColor + "; color:" + textColorContrast + "; padding: 2px 10px; border: 1px solid #000; margin: 0 5px;\">" + textColor + "</span>";
-                   
-    var hiddenInput = document.createElement("input");
-    hiddenInput.type = "hidden";
-    hiddenInput.name = "ART_PUZZLE_BOX_COLORS[]";
-    hiddenInput.value = JSON.stringify({box: boxColor, text: textColor});
-    
-    display.appendChild(hiddenInput);
-    col10.appendChild(display);
-    
-    var col2 = document.createElement("div");
-    col2.className = "col-md-2";
-    
-    var removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.className = "btn btn-danger";
-    removeBtn.innerHTML = "Rimuovi";
-    removeBtn.onclick = function() { removeBoxColors(this); };
-    
-    col2.appendChild(removeBtn);
-    row.appendChild(col10);
-    row.appendChild(col2);
-    div.appendChild(row);
-    container.appendChild(div);
-}
+                var boxColor = document.getElementById("new_box_color").value;
+                var textColor = document.getElementById("new_text_color").value;
+                
+                if (boxColor === "" || textColor === "") {
+                    alert("Per favore seleziona entrambi i colori");
+                    return;
+                }
+                
+                var container = document.getElementById("box_colors_list");
+                
+                // Aggiungi titolo se non esiste ancora
+                if (container.children.length === 0) {
+                    var title = document.createElement("p");
+                    title.innerHTML = "<strong>Combinazioni colori preimpostate:</strong>";
+                    container.appendChild(title);
+                }
+                
+                var div = document.createElement("div");
+                div.className = "form-group";
+                div.style.marginBottom = "10px";
+                
+                var row = document.createElement("div");
+                row.className = "row";
+                row.style.display = "flex";
+                row.style.alignItems = "center";
+                
+                var col10 = document.createElement("div");
+                col10.className = "col-md-10";
+                
+                var display = document.createElement("div");
+                display.style.display = "flex";
+                display.style.alignItems = "center";
+                display.style.backgroundColor = "#f5f5f5";
+                display.style.padding = "6px 12px";
+                display.style.border = "1px solid #ccc";
+                display.style.borderRadius = "4px";
+                
+                var boxColorContrast = getContrastColor(boxColor);
+                var textColorContrast = getContrastColor(textColor);
+                
+               display.innerHTML = "Scatola: <span style=\\"background-color:" + boxColor + "; color:" + boxColorContrast + "; padding: 2px 10px; border: 1px solid #000; margin: 0 5px;\\">" + boxColor + "</span> " +
+                               "Testo: <span style=\\"background-color:" + textColor + "; color:" + textColorContrast + "; padding: 2px 10px; border: 1px solid #000; margin: 0 5px;\\">" + textColor + "</span>";
+                               
+                var hiddenInput = document.createElement("input");
+                hiddenInput.type = "hidden";
+                hiddenInput.name = "ART_PUZZLE_BOX_COLORS[]";
+                hiddenInput.value = JSON.stringify({box: boxColor, text: textColor});
+                
+                display.appendChild(hiddenInput);
+                col10.appendChild(display);
+                
+                var col2 = document.createElement("div");
+                col2.className = "col-md-2";
+                
+                var removeBtn = document.createElement("button");
+                removeBtn.type = "button";
+                removeBtn.className = "btn btn-danger";
+                removeBtn.innerHTML = "Rimuovi";
+                removeBtn.onclick = function() { removeBoxColors(this); };
+                
+                col2.appendChild(removeBtn);
+                row.appendChild(col10);
+                row.appendChild(col2);
+                div.appendChild(row);
+                container.appendChild(div);
+            }
             
             function removeBoxColors(btn) {
                 var div = btn.parentNode.parentNode.parentNode;
@@ -862,24 +1027,24 @@ private function isPuzzleProduct($id_product)
             .form-control[readonly] {
                 background-color: #eee;
             }
-        .row {
-    margin-left: 0;
-    margin-right: 0;
-}
-
-.col-md-2, .col-md-4, .col-md-5, .col-md-10 {
-    padding-left: 15px;
-    padding-right: 15px;
-}
-
-#box_colors_container .form-group {
-    margin-bottom: 0;
-}
-
-#box_colors_list .form-group {
-    margin-bottom: 10px;
-}
-
+            
+            .row {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            
+            .col-md-2, .col-md-4, .col-md-5, .col-md-10 {
+                padding-left: 15px;
+                padding-right: 15px;
+            }
+            
+            #box_colors_container .form-group {
+                margin-bottom: 0;
+            }
+            
+            #box_colors_list .form-group {
+                margin-bottom: 10px;
+            }
         </style>';
         
         return $js;

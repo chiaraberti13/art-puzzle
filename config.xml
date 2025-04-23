@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
     <name>art_puzzle</name>
-    <displayName>Art Puzzle</displayName>
-    <version>1.0.0</version>
+    <displayName><![CDATA[Art Puzzle]]></displayName>
+    <version><![CDATA[1.0.0]]></version>
     <description><![CDATA[Modulo PrestaShop per la creazione di puzzle personalizzati.]]></description>
-    <author>Chiara Berti</author>
-    <tab>front_office_features</tab>
+    <author><![CDATA[Chiara Berti]]></author>
+    <tab><![CDATA[front_office_features]]></tab>
+    <is_configurable>1</is_configurable>
     <need_instance>0</need_instance>
+    <limited_countries></limited_countries>
     <ps_versions_compliancy>
-        <min>1.7.6.9</min>
-        <max>1.7.6.9</max>
+        <min>1.7.0.0</min>
+        <max>1.7.9.99</max>
     </ps_versions_compliancy>
-    <dependencies>
-        <dependency id="tcpdf"/>
-    </dependencies>
 </module>
