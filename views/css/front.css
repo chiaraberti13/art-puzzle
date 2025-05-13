@@ -1,120 +1,561 @@
-/* Stili per il modulo Art Puzzle */
-.art-puzzle-customize-button {
-    margin: 15px 0;
-}
+/**
+ * Art Puzzle - Stili Frontend
+ * CSS per l'interfaccia di personalizzazione dei puzzle
+ */
 
-.art-puzzle-customize-button button {
-    width: 100%;
-    text-transform: uppercase;
-    font-weight: 600;
+/* Contenitore principale */
+.art-puzzle-customizer-page,
+.art-puzzle-summary-page {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #333;
+    margin-bottom: 40px;
 }
 
 .art-puzzle-container {
-    padding: 20px;
-    background: #f8f8f8;
-    border-radius: 5px;
-    margin-bottom: 20px;
-}
-
-.art-puzzle-upload-zone {
-    border: 2px dashed #ccc;
-    border-radius: 5px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 30px;
-    text-align: center;
+    position: relative;
+}
+
+/* Titoli */
+.art-puzzle-container h3 {
+    color: #2c3e50;
+    margin-bottom: 25px;
+    font-weight: 600;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.art-puzzle-container h4 {
+    color: #3498db;
     margin-bottom: 20px;
-    background: #fff;
-    cursor: pointer;
-    transition: all 0.3s;
+    font-weight: 500;
 }
 
-.art-puzzle-upload-zone:hover {
-    border-color: #2fb5d2;
+/* Passi della personalizzazione */
+.art-puzzle-steps .step {
+    margin-bottom: 30px;
+    position: relative;
+    padding: 20px;
+    border-radius: 6px;
+    background-color: #f9f9f9;
 }
 
-.art-puzzle-upload-zone.highlight {
-    border-color: #2fb5d2;
-    background: #f0f9fc;
+.art-puzzle-steps .step.active {
+    background-color: #f4f9fd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.art-puzzle-preview {
-    margin: 20px 0;
+.art-puzzle-steps .step:not(:last-child):after {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 30px;
+    background-color: #e0e0e0;
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Zona caricamento immagine */
+.art-puzzle-upload-zone {
+    border: 3px dashed #ddd;
+    border-radius: 8px;
+    padding: 40px 20px;
     text-align: center;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+    cursor: pointer;
+}
+
+.art-puzzle-upload-zone:hover,
+.art-puzzle-upload-zone.dragover {
+    border-color: #3498db;
+    background-color: #f0f7fc;
+}
+
+.art-puzzle-upload-zone p {
+    margin: 10px 0;
+    color: #7f8c8d;
+}
+
+.art-puzzle-upload-zone i.material-icons {
+    font-size: 48px;
+    color: #bdc3c7;
+    margin-bottom: 15px;
+    display: block;
+}
+
+/* Anteprima immagine */
+.art-puzzle-preview {
+    text-align: center;
+    margin: 20px 0;
 }
 
 .art-puzzle-preview img {
     max-width: 100%;
-    max-height: 300px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    max-height: 400px;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.art-puzzle-options {
-    margin: 20px 0;
-}
-
-.art-puzzle-options .form-group {
-    margin-bottom: 15px;
-}
-
-.art-puzzle-box-preview {
-    padding: 15px;
-    border: 1px solid #ddd;
-    margin-top: 20px;
-    text-align: center;
-    min-height: 100px;
-}
-
+/* Ritaglio immagine con cropper.js */
 .art-puzzle-crop-container {
-    position: relative;
-    max-width: 100%;
-    margin: 0 auto;
+    margin: 20px 0;
+    max-height: 500px;
+    overflow: hidden;
 }
 
+.art-puzzle-crop-container img {
+    max-width: 100%;
+}
+
+/* Pulsanti di orientamento */
 .art-puzzle-orientation-buttons {
     text-align: center;
-    margin: 10px 0;
+    margin: 15px 0;
 }
 
-.art-puzzle-orientation-buttons button {
+.art-puzzle-orientation-buttons .btn {
     margin: 0 5px;
 }
 
+/* Personalizzazione scatola */
+#art-puzzle-box-colors {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+.color-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin: 5px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+}
+
+.color-btn.selected {
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px #3498db;
+}
+
+/* Font selection */
+#art-puzzle-fonts {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+.font-btn {
+    padding: 8px 15px;
+    margin: 5px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.font-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.font-btn.selected {
+    background-color: #3498db;
+    color: #fff;
+    border-color: #2980b9;
+}
+
+/* Anteprima scatola */
+.art-puzzle-box-preview {
+    margin: 20px 0;
+    text-align: center;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+}
+
+#art-puzzle-box-simulation img {
+    max-width: 100%;
+    max-height: 300px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Navigazione tra passi */
+.art-puzzle-steps .btn {
+    transition: all 0.2s ease;
+}
+
+.art-puzzle-steps .btn-primary {
+    background-color: #3498db;
+    border-color: #2980b9;
+}
+
+.art-puzzle-steps .btn-primary:hover:not(:disabled) {
+    background-color: #2980b9;
+    border-color: #2473a6;
+}
+
+.art-puzzle-steps .btn-secondary {
+    background-color: #7f8c8d;
+    border-color: #6c7a7a;
+}
+
+.art-puzzle-steps .btn-secondary:hover {
+    background-color: #6c7a7a;
+    border-color: #5d6767;
+}
+
+/* Info sulla qualità dell'immagine */
+.art-puzzle-quality-info {
+    padding: 15px;
+    border-radius: 6px;
+    margin: 20px 0;
+}
+
+/* Overlay di caricamento */
 .art-puzzle-loading {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255,255,255,0.8);
+    background-color: rgba(255, 255, 255, 0.8);
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     z-index: 9999;
-    display: none;
 }
 
-.color-option {
+.art-puzzle-loading .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Riepilogo personalizzazione */
+.puzzle-preview-container,
+.box-preview-container {
+    margin: 15px 0;
+    text-align: center;
+}
+
+.puzzle-preview-container img,
+.box-preview-container img {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.puzzle-info,
+.box-info {
+    text-align: left;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    margin-top: 20px;
+}
+
+.product-info {
+    margin: 30px 0;
+}
+
+.confirmation-section {
+    margin-top: 30px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .art-puzzle-container {
+        padding: 15px;
+    }
+    
+    .art-puzzle-steps .step {
+        padding: 15px;
+    }
+    
+    .art-puzzle-upload-zone {
+        padding: 30px 15px;
+    }
+    
+    .art-puzzle-preview img {
+        max-height: 300px;
+    }
+    
+    .color-btn {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .font-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+    
+    .confirmation-section .btn {
+        margin-bottom: 10px;
+    }
+}
+
+/* Effetti di transizione */
+.art-puzzle-steps .step {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Effetto hover sui pulsanti */
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Pulsante disabilitato */
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Effetti per il form di conferma */
+.custom-control-input:checked ~ .custom-control-label::before {
+    border-color: #3498db;
+    background-color: #3498db;
+}
+
+.custom-control-label::before {
+    transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+
+/* Stili per le schede prodotto nel riepilogo */
+.product-info .card-header {
+    background-color: #f8f9fa;
+}
+
+.product-info .product-price {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.product-info .regular-price {
+    text-decoration: line-through;
+    color: #95a5a6;
+    font-size: 0.9em;
+}
+
+.product-info .discount-percentage {
+    background-color: #e74c3c;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.8em;
+    margin-left: 5px;
+}
+
+/* Animazioni */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.art-puzzle-preview,
+.puzzle-preview-container img,
+.box-preview-container img,
+#art-puzzle-box-simulation img {
+    animation: fadeIn 0.5s ease;
+}
+
+.step.active {
+    animation: slideInUp 0.3s ease;
+}
+
+/* Tooltip personalizzati */
+.art-puzzle-tooltip {
+    position: relative;
     display: inline-block;
+}
+
+.art-puzzle-tooltip .tooltip-text {
+    visibility: hidden;
+    width: 120px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 4px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -60px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+}
+
+.art-puzzle-tooltip .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+}
+
+.art-puzzle-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Effetti notifiche */
+.art-puzzle-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    background-color: #2ecc71;
+    color: white;
+    border-radius: 4px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    transform: translateX(150%);
+    transition: transform 0.3s ease;
+}
+
+.art-puzzle-notification.show {
+    transform: translateX(0);
+}
+
+.art-puzzle-notification.error {
+    background-color: #e74c3c;
+}
+
+.art-puzzle-notification.warning {
+    background-color: #f39c12;
+}
+
+/* Stili per formati puzzle */
+.puzzle-format-option {
+    border: 2px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.puzzle-format-option:hover {
+    border-color: #3498db;
+    background-color: #f4f9fd;
+}
+
+.puzzle-format-option.selected {
+    border-color: #3498db;
+    background-color: #f4f9fd;
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+}
+
+.puzzle-format-option h5 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.puzzle-format-option .format-details {
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+/* Barra di avanzamento nella personalizzazione */
+.art-puzzle-progress {
+    margin-bottom: 30px;
+}
+
+.art-puzzle-progress-bar {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.art-puzzle-progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #e0e0e0;
+    z-index: 1;
+}
+
+.art-puzzle-progress-step {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.art-puzzle-progress-dot {
     width: 30px;
     height: 30px;
-    border-radius: .25rem;
-    margin-right: 5px;
-    cursor: pointer;
-    border: 2px solid transparent;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid #e0e0e0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto 10px;
+    transition: all 0.3s ease;
 }
 
-.color-option.selected {
-    border-color: #000;
+.art-puzzle-progress-dot .number {
+    color: #7f8c8d;
+    font-weight: 600;
 }
 
-.font-option {
-    cursor: pointer;
-    padding: 5px;
-    border: 1px solid #ddd;
-    margin-bottom: 5px;
-    border-radius: 4px;
+.art-puzzle-progress-text {
+    font-size: 0.9em;
+    color: #7f8c8d;
 }
 
-.font-option.selected {
-    background-color: #f0f0f0;
-    border-color: #777;
+.art-puzzle-progress-step.active .art-puzzle-progress-dot {
+    background-color: #3498db;
+    border-color: #3498db;
+}
+
+.art-puzzle-progress-step.active .art-puzzle-progress-dot .number {
+    color: #fff;
+}
+
+.art-puzzle-progress-step.active .art-puzzle-progress-text {
+    color: #3498db;
+    font-weight: 600;
+}
+
+.art-puzzle-progress-step.completed .art-puzzle-progress-dot {
+    background-color: #2ecc71;
+    border-color: #2ecc71;
+}
+
+.art-puzzle-progress-step.completed .art-puzzle-progress-dot .number {
+    color: #fff;
 }

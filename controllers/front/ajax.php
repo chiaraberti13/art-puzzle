@@ -161,33 +161,54 @@ class Art_PuzzleAjaxModuleFrontController extends ModuleFrontController
         $filename = 'puzzle_'.time().'_'.Tools::passwdGen(8).'.png';
         $filepath = $upload_dir.$filename;
         
-        // Salva l'immagine dal base64
         $image_data = $data['customization']['image'];
-        $image_parts = explode(";base64,", $image_data);
-        $image_base64 = isset($image_parts[1]) ? $image_parts[1] : null;
-        
-        if (!$image_base64) {
-            $this->returnResponse(false, 'Formato immagine non valido');
+$image_parts = explode(";base64,", $image_data);
+$mime_info = explode(":", $image_parts[0]);
+$mime_type = isset($mime_info[1]) ? explode(";", $mime_info[1])[0] : null;
+$image_base64 = $image_parts[1] ?? null;
+
+if (!$image_base64 || !$mime_type) {
+    $this->returnResponse(false, 'Formato immagine non valido');
+    return;
+}
+
+$allowed_mime = ['image/jpeg', 'image/png', 'image/gif'];
+$ext_map = [
+    'image/jpeg' => 'jpg',
+    'image/png' => 'png',
+    'image/gif' => 'gif',
+];
+
+if (!in_array($mime_type, $allowed_mime)) {
+    $this->returnResponse(false, 'Tipo di file non supportato. Utilizza solo immagini JPG, PNG o GIF.');
+    return;
+}
+
+$image_decoded = base64_decode($image_base64);
+        ArtPuzzleLogger::log('✅ base64_decode riuscita', 'INFO');
+if (!$image_decoded) {
+        ArtPuzzleLogger::log('❌ Errore: base64_decode fallita', 'ERROR');
+    $this->returnResponse(false, 'Immagine non valida');
+    return;
+}
+
+if (!@imagecreatefromstring($image_decoded)) {
+        ArtPuzzleLogger::log('❌ Errore: imagecreatefromstring fallita', 'ERROR');
+    $this->returnResponse(false, 'Il file caricato non è un\'immagine valida');
+    return;
+}
+
+$ext = $ext_map[$mime_type];
+$filename = 'puzzle_' . time() . '_' . Tools::passwdGen(8) . '.' . $ext;
+$filepath = _PS_MODULE_DIR_ . 'art_puzzle/upload/' . $filename;
+
+if (!file_put_contents($filepath, $image_decoded)) {
+            ArtPuzzleLogger::log('❌ Errore: file_put_contents fallita. Path: ' . $filepath, 'ERROR');
+            $this->returnResponse(false, 'Errore durante il salvataggio dell\'immagine');
             return;
         }
-        
-        // Verifica validità immagine
-        $image_decoded = base64_decode($image_base64);
-        if (!$image_decoded) {
-            $this->returnResponse(false, 'Immagine non valida');
-            return;
-        }
-        
-        // Verifica che sia un'immagine reale
-        $img = @imagecreatefromstring($image_decoded);
-        if (!$img) {
-            $this->returnResponse(false, 'Il file caricato non è un\'immagine valida');
-            return;
-        }
-        imagedestroy($img);
-        
-        // Salva l'immagine
-        file_put_contents($filepath, $image_decoded);
+        ArtPuzzleLogger::log('✅ Immagine salvata correttamente in: ' . $filepath, 'INFO');
+
         
         // Verifica e crea campi di personalizzazione
         $customization_fields = Db::getInstance()->executeS('
@@ -278,6 +299,7 @@ class Art_PuzzleAjaxModuleFrontController extends ModuleFrontController
         }
         
         $image_decoded = base64_decode($image_base64);
+        ArtPuzzleLogger::log('✅ base64_decode riuscita', 'INFO');
         
         // Verifica che sia un'immagine valida
         $img = @imagecreatefromstring($image_decoded);
@@ -303,6 +325,7 @@ class Art_PuzzleAjaxModuleFrontController extends ModuleFrontController
             $message = 'L\'immagine è di media risoluzione. La qualità dovrebbe essere accettabile.';
         }
         
+        ArtPuzzleLogger::log('✅ imagecreatefromstring riuscita', 'INFO');
         imagedestroy($img);
         
         $this->returnResponse(true, $message, [

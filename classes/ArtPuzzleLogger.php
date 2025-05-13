@@ -1,215 +1,325 @@
 <?php
 /**
- * Art Puzzle Module - Logger Class
+ * Art Puzzle - Logger
+ * Classe che gestisce il logging delle operazioni del modulo
  */
-
-if (!defined('_PS_VERSION_')) {
-    exit;
-}
 
 class ArtPuzzleLogger
 {
-    /** @var string Percorso del file di log */
-    protected static $logFile;
-    
-    /** @var int Dimensione massima del file di log in bytes (5MB) */
-    protected static $maxFileSize = 5242880;
-    
-    /** @var array Livelli di log disponibili */
-    protected static $logLevels = ['INFO', 'WARNING', 'ERROR', 'DEBUG'];
-    
     /**
-     * Inizializza il logger
+     * Livelli di log disponibili
      */
-    public static function init()
-    {
-        // Imposta il percorso del file di log
-        self::$logFile = _PS_MODULE_DIR_ . 'art_puzzle/logs/art_puzzle.log';
-        
-        // Verifica che la directory logs esista
-        $logDir = _PS_MODULE_DIR_ . 'art_puzzle/logs/';
-        if (!file_exists($logDir)) {
-            @mkdir($logDir, 0755, true);
-        }
-        
-        // Crea il file se non esiste
-        if (!file_exists(self::$logFile)) {
-            @file_put_contents(self::$logFile, '');
-        }
-        
-        // Verifica se il file è scrivibile
-        if (!is_writable(self::$logFile)) {
-            // Se non è scrivibile, tenta di cambiare i permessi
-            @chmod(self::$logFile, 0666);
-        }
-    }
+    const LOG_LEVEL_INFO = 'INFO';
+    const LOG_LEVEL_WARNING = 'WARNING';
+    const LOG_LEVEL_ERROR = 'ERROR';
+    const LOG_LEVEL_DEBUG = 'DEBUG';
     
     /**
      * Registra un messaggio nel file di log
-     *
-     * @param string $message Il messaggio da loggare
-     * @param string $level Il livello di log (INFO, WARNING, ERROR, DEBUG)
-     * @param bool $includeBacktrace Se includere il backtrace
-     * @return bool True se il messaggio è stato registrato con successo
+     * @param string $message Messaggio da registrare
+     * @param string $level Livello di log (INFO, WARNING, ERROR, DEBUG)
+     * @param array $context Dati di contesto aggiuntivi
+     * @return bool True se il logging è riuscito
      */
-    public static function log($message, $level = 'INFO', $includeBacktrace = false)
+    public static function log($message, $level = self::LOG_LEVEL_INFO, $context = [])
     {
-        // Inizializza il logger se non è già stato fatto
-        if (!isset(self::$logFile)) {
-            self::init();
+        // Verifica che il messaggio non sia vuoto
+        if (empty($message)) {
+            return false;
         }
         
-        // Verifica il livello di log
-        $level = strtoupper($level);
-        if (!in_array($level, self::$logLevels)) {
-            $level = 'INFO';
+        // Verifica che il livello sia valido
+        $validLevels = [self::LOG_LEVEL_INFO, self::LOG_LEVEL_WARNING, self::LOG_LEVEL_ERROR, self::LOG_LEVEL_DEBUG];
+        
+        if (!in_array($level, $validLevels)) {
+            $level = self::LOG_LEVEL_INFO;
         }
         
-        // Prepara il messaggio di log
-        $date = date('Y-m-d H:i:s');
-        $entry = "[$date] [$level] $message" . PHP_EOL;
+        // Ottieni la directory dei log
+        $logDir = _PS_MODULE_DIR_ . 'art_puzzle/logs/';
         
-        // Aggiungi backtrace se richiesto
-        if ($includeBacktrace && $level === 'ERROR') {
-            $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-            if (count($backtrace) > 1) {
-                $entry .= "Backtrace:" . PHP_EOL;
-                for ($i = 1; $i < count($backtrace); $i++) {
-                    $file = isset($backtrace[$i]['file']) ? $backtrace[$i]['file'] : 'unknown';
-                    $line = isset($backtrace[$i]['line']) ? $backtrace[$i]['line'] : 'unknown';
-                    $function = isset($backtrace[$i]['function']) ? $backtrace[$i]['function'] : 'unknown';
-                    $entry .= "  $file:$line - $function()" . PHP_EOL;
+        // Crea la directory se non esiste
+        if (!file_exists($logDir)) {
+            if (!mkdir($logDir, 0755, true)) {
+                return false;
+            }
+        }
+        
+        // Nome del file di log (uno per giorno)
+        $logFile = $logDir . 'art_puzzle_' . date('Y-m-d') . '.log';
+        
+        // Formatta il messaggio di log
+        $logMessage = self::formatLogMessage($message, $level, $context);
+        
+        // Scrivi nel file di log
+        return file_put_contents($logFile, $logMessage . PHP_EOL, FILE_APPEND) !== false;
+    }
+    
+    /**
+     * Registra un messaggio di livello INFO
+     * @param string $message Messaggio da registrare
+     * @param array $context Dati di contesto aggiuntivi
+     * @return bool True se il logging è riuscito
+     */
+    public static function info($message, $context = [])
+    {
+        return self::log($message, self::LOG_LEVEL_INFO, $context);
+    }
+    
+    /**
+     * Registra un messaggio di livello WARNING
+     * @param string $message Messaggio da registrare
+     * @param array $context Dati di contesto aggiuntivi
+     * @return bool True se il logging è riuscito
+     */
+    public static function warning($message, $context = [])
+    {
+        return self::log($message, self::LOG_LEVEL_WARNING, $context);
+    }
+    
+    /**
+     * Registra un messaggio di livello ERROR
+     * @param string $message Messaggio da registrare
+     * @param array $context Dati di contesto aggiuntivi
+     * @return bool True se il logging è riuscito
+     */
+    public static function error($message, $context = [])
+    {
+        return self::log($message, self::LOG_LEVEL_ERROR, $context);
+    }
+    
+    /**
+     * Registra un messaggio di livello DEBUG
+     * @param string $message Messaggio da registrare
+     * @param array $context Dati di contesto aggiuntivi
+     * @return bool True se il logging è riuscito
+     */
+    public static function debug($message, $context = [])
+    {
+        // Verifica che il debug sia abilitato
+        if (!Configuration::get('ART_PUZZLE_DEBUG_MODE')) {
+            return false;
+        }
+        
+        return self::log($message, self::LOG_LEVEL_DEBUG, $context);
+    }
+    
+    /**
+     * Formatta un messaggio di log
+     * @param string $message Messaggio da formattare
+     * @param string $level Livello di log
+     * @param array $context Dati di contesto
+     * @return string Messaggio formattato
+     */
+    private static function formatLogMessage($message, $level, $context = [])
+    {
+        // Data e ora correnti
+        $timestamp = date('Y-m-d H:i:s');
+        
+        // ID del contesto (se disponibile)
+        $contextId = isset($context['id']) ? ' [' . $context['id'] . ']' : '';
+        
+        // Unisce tutto in un unico messaggio
+        $formattedMessage = "[{$timestamp}] [{$level}]{$contextId} {$message}";
+        
+        // Aggiunge il contesto in formato JSON (se presente)
+        if (!empty($context) && $context !== ['id' => $context['id']]) {
+            $contextData = $context;
+            
+            // Rimuove l'ID dal contesto per evitare duplicazioni
+            if (isset($contextData['id'])) {
+                unset($contextData['id']);
+            }
+            
+            // Aggiunge il contesto solo se ci sono ancora dati
+            if (!empty($contextData)) {
+                $formattedMessage .= ' ' . json_encode($contextData);
+            }
+        }
+        
+        return $formattedMessage;
+    }
+    
+    /**
+     * Ottiene i log filtrati
+     * @param string $level Filtra per livello di log (opzionale)
+     * @param string $dateFrom Data di inizio (Y-m-d, opzionale)
+     * @param string $dateTo Data di fine (Y-m-d, opzionale)
+     * @param string $search Testo da cercare (opzionale)
+     * @param int $limit Numero massimo di log da restituire (opzionale)
+     * @return array Log filtrati
+     */
+    public static function getLogs($level = null, $dateFrom = null, $dateTo = null, $search = null, $limit = 100)
+    {
+        $logs = [];
+        $logDir = _PS_MODULE_DIR_ . 'art_puzzle/logs/';
+        
+        // Verifica che la directory esista
+        if (!file_exists($logDir)) {
+            return $logs;
+        }
+        
+        // Determina i file di log da esaminare
+        $logFiles = [];
+        
+        if ($dateFrom && $dateTo) {
+            // Intervallo di date
+            $currentDate = new DateTime($dateFrom);
+            $endDate = new DateTime($dateTo);
+            
+            while ($currentDate <= $endDate) {
+                $filename = 'art_puzzle_' . $currentDate->format('Y-m-d') . '.log';
+                $filePath = $logDir . $filename;
+                
+                if (file_exists($filePath)) {
+                    $logFiles[] = $filePath;
+                }
+                
+                $currentDate->modify('+1 day');
+            }
+        } else if ($dateFrom) {
+            // Solo data di inizio
+            $filename = 'art_puzzle_' . date('Y-m-d', strtotime($dateFrom)) . '.log';
+            $filePath = $logDir . $filename;
+            
+            if (file_exists($filePath)) {
+                $logFiles[] = $filePath;
+            }
+        } else {
+            // Tutti i file di log disponibili
+            $files = scandir($logDir);
+            
+            foreach ($files as $file) {
+                if (strpos($file, 'art_puzzle_') === 0 && pathinfo($file, PATHINFO_EXTENSION) === 'log') {
+                    $logFiles[] = $logDir . $file;
+                }
+            }
+            
+            // Ordina i file per data (dal più recente)
+            usort($logFiles, function($a, $b) {
+                return filemtime($b) - filemtime($a);
+            });
+        }
+        
+        // Legge i log dai file
+        $count = 0;
+        
+        foreach ($logFiles as $file) {
+            $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            
+            if (!$lines) {
+                continue;
+            }
+            
+            // Inverte l'ordine per avere i log più recenti prima
+            $lines = array_reverse($lines);
+            
+            foreach ($lines as $line) {
+                // Estrai le informazioni dalla riga di log
+                $logInfo = self::parseLogLine($line);
+                
+                if (!$logInfo) {
+                    continue;
+                }
+                
+                // Filtra per livello
+                if ($level && $logInfo['level'] !== $level) {
+                    continue;
+                }
+                
+                // Filtra per testo di ricerca
+                if ($search && stripos($logInfo['message'], $search) === false) {
+                    continue;
+                }
+                
+                // Aggiungi il log all'array
+                $logs[] = $logInfo;
+                
+                $count++;
+                
+                // Limita il numero di log
+                if ($limit && $count >= $limit) {
+                    break 2; // Esce da entrambi i cicli
                 }
             }
         }
         
-        // Controlla se il file è troppo grande
-        self::rotateLogIfNeeded();
-        
-        // Scrivi nel file di log
-        return @file_put_contents(self::$logFile, $entry, FILE_APPEND) !== false;
+        return $logs;
     }
     
     /**
-     * Ruota il file di log se diventa troppo grande
+     * Analizza una riga di log e ne estrae le informazioni
+     * @param string $line Riga di log
+     * @return array|false Informazioni estratte o false se la riga non è valida
      */
-    protected static function rotateLogIfNeeded()
+    private static function parseLogLine($line)
     {
-        if (!file_exists(self::$logFile)) {
-            return;
+        // Pattern per estrarre le informazioni dalla riga di log
+        $pattern = '/\[([0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2})\] \[(INFO|WARNING|ERROR|DEBUG)\](?:\s+\[([^\]]+)\])?\s+(.+?)(?:\s+(\{.+\}))?$/';
+        
+        if (!preg_match($pattern, $line, $matches)) {
+            return false;
         }
         
-        $fileSize = filesize(self::$logFile);
-        if ($fileSize > self::$maxFileSize) {
-            // Crea un nuovo nome per il file di backup
-            $backupFile = self::$logFile . '.' . date('Y-m-d-H-i-s') . '.bak';
-            
-            // Rinomina il file corrente
-            @rename(self::$logFile, $backupFile);
-            
-            // Crea un nuovo file di log
-            @file_put_contents(self::$logFile, date('Y-m-d H:i:s') . " [INFO] Log file rotated, old log saved as " . basename($backupFile) . PHP_EOL);
-            
-            // Pulisci i vecchi file di backup (mantieni solo gli ultimi 5)
-            self::cleanupOldLogs();
+        // Estrai le informazioni
+        $timestamp = $matches[1];
+        $level = $matches[2];
+        $contextId = isset($matches[3]) ? $matches[3] : null;
+        $message = $matches[4];
+        $contextJson = isset($matches[5]) ? $matches[5] : null;
+        
+        // Decodifica il contesto JSON
+        $context = [];
+        
+        if ($contextJson) {
+            $context = json_decode($contextJson, true) ?: [];
         }
+        
+        // Aggiungi l'ID al contesto
+        if ($contextId) {
+            $context['id'] = $contextId;
+        }
+        
+        return [
+            'timestamp' => $timestamp,
+            'level' => $level,
+            'message' => $message,
+            'context' => $context
+        ];
     }
     
     /**
-     * Elimina i vecchi file di log di backup
+     * Pulisce i log più vecchi di un certo numero di giorni
+     * @param int $days Numero di giorni da mantenere
+     * @return int Numero di file eliminati
      */
-    protected static function cleanupOldLogs()
+    public static function cleanLogs($days = 30)
     {
         $logDir = _PS_MODULE_DIR_ . 'art_puzzle/logs/';
-        if (!is_dir($logDir)) {
-            return;
+        
+        // Verifica che la directory esista
+        if (!file_exists($logDir)) {
+            return 0;
         }
         
-        // Trova tutti i file di backup
-        $backupFiles = glob($logDir . 'art_puzzle.log.*.bak');
+        $files = scandir($logDir);
+        $now = time();
+        $count = 0;
         
-        // Ordina per data (più recenti prima)
-        usort($backupFiles, function($a, $b) {
-            return filemtime($b) - filemtime($a);
-        });
-        
-        // Elimina tutti tranne i più recenti 5
-        $filesToKeep = 5;
-        if (count($backupFiles) > $filesToKeep) {
-            for ($i = $filesToKeep; $i < count($backupFiles); $i++) {
-                @unlink($backupFiles[$i]);
-            }
-        }
-    }
-    
-    /**
-     * Pulisce completamente i log
-     *
-     * @return bool True se i log sono stati puliti con successo
-     */
-    public static function clearLogs()
-    {
-        // Inizializza il logger se non è già stato fatto
-        if (!isset(self::$logFile)) {
-            self::init();
-        }
-        
-        // Elimina tutti i file di backup
-        $logDir = _PS_MODULE_DIR_ . 'art_puzzle/logs/';
-        if (is_dir($logDir)) {
-            $backupFiles = glob($logDir . 'art_puzzle.log.*.bak');
-            foreach ($backupFiles as $file) {
-                @unlink($file);
+        foreach ($files as $file) {
+            if (strpos($file, 'art_puzzle_') === 0 && pathinfo($file, PATHINFO_EXTENSION) === 'log') {
+                $filePath = $logDir . $file;
+                $fileTime = filemtime($filePath);
+                
+                // Se il file è più vecchio del limite, eliminalo
+                if ($now - $fileTime > $days * 86400) {
+                    if (unlink($filePath)) {
+                        $count++;
+                    }
+                }
             }
         }
         
-        // Svuota il file di log principale
-        $success = @file_put_contents(self::$logFile, date('Y-m-d H:i:s') . " [INFO] Logs cleared" . PHP_EOL) !== false;
-        
-        return $success;
-    }
-    
-    /**
-     * Restituisce il contenuto del file di log
-     *
-     * @param int $lines Numero di righe da leggere (0 = tutte)
-     * @return string Il contenuto del file di log
-     */
-    public static function getLogContent($lines = 0)
-    {
-        // Inizializza il logger se non è già stato fatto
-        if (!isset(self::$logFile)) {
-            self::init();
-        }
-        
-        if (!file_exists(self::$logFile)) {
-            return '';
-        }
-        
-        if ($lines <= 0) {
-            // Leggi l'intero file
-            return @file_get_contents(self::$logFile);
-        } else {
-            // Leggi solo le ultime n righe
-            $file = new SplFileObject(self::$logFile, 'r');
-            $file->seek(PHP_INT_MAX); // Vai alla fine del file
-            $totalLines = $file->key(); // Ottieni il numero totale di righe
-            
-            if ($totalLines <= $lines) {
-                // Se ci sono meno righe di quelle richieste, leggi tutto il file
-                return @file_get_contents(self::$logFile);
-            }
-            
-            // Vai alla riga desiderata
-            $file->seek($totalLines - $lines);
-            
-            // Leggi le righe rimanenti
-            $content = '';
-            while (!$file->eof()) {
-                $content .= $file->fgets();
-            }
-            
-            return $content;
-        }
+        return $count;
     }
 }

@@ -108,6 +108,7 @@
 
 {block name='javascript_bottom'}
     {$smarty.block.parent}
+    <script type="text/javascript" src="{$urls.base_url}modules/art_puzzle/views/js/art_puzzle_customizer.js"></script>
     <script type="text/javascript">
         // Configurazione globale
         var artPuzzleProductId = {$id_product|intval};
@@ -119,5 +120,24 @@
         var artPuzzleEnableCropTool = {if $enable_crop_tool}true{else}false{/if};
         var artPuzzleAjaxUrl = "{$puzzleAjaxUrl|escape:'javascript'}";
         var artPuzzleToken = "{$securityToken|escape:'javascript'}";
+        var baseUrl = "{$urls.base_url}";
+        
+        // Debug per identificare problemi di caricamento
+        $(document).ready(function() {
+            console.log('Customizer inizializzato');
+            console.log('Configurazione:', {
+                productId: artPuzzleProductId,
+                maxUploadSize: artPuzzleMaxUploadSize,
+                allowedFileTypes: artPuzzleAllowedFileTypes,
+                ajaxUrl: artPuzzleAjaxUrl
+            });
+        });
     </script>
 {/block}
+
+<script>
+    var artPuzzleAllowedFileTypes = ['jpg', 'jpeg', 'png', 'gif'];
+    var artPuzzleTranslations = {
+        invalidFileType: "Tipo di file non supportato. Utilizza solo immagini JPG, PNG o GIF."
+    };
+</script>
